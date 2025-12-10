@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Feed UI - Educational Theme</title>
+    
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Colors */
+            --bg-body: #F0F2F5;
+            --bg-card: #FFFFFF;
+            --bg-nav-active: #2D3436;
+            --text-nav-active: #FFFFFF;
+            --primary: #FF6B6B; /* Coral Accent */
+            --text-main: #2D3436;
+            --text-muted: #636E72;
+            --border-radius: 16px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.08);
+            --spacing: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #F0F2F5 0%, #E6E9EF 100%);
+            color: var(--text-main);
+            height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        /* --- Layout Grid --- */
+        .main-container {
+            display: grid;
+            grid-template-columns: 260px 600px 300px; /* Left, Center, Right */
+            gap: 24px;
+            width: 100%;
+            max-width: 1250px;
+            height: calc(100vh - 48px);
+        }
+
+        /* --- Common Components --- */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .avatar.lg { width: 60px; height: 60px; font-size: 24px; }
+        .avatar.sm { width: 32px; height: 32px; font-size: 14px; }
+        
+        /* Helper for colored avatars */
+        .bg-blue { background: #54a0ff; }
+        .bg-purple { background: #5f27cd; }
+        .bg-green { background: #1dd1a1; }
+        .bg-teal { background: #00cec9; }
+
+        /* --- LEFT SIDEBAR --- */
+        .left-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            height: 100%;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+        .left-sidebar::-webkit-scrollbar { display: none; }
+
+        /* Profile Card */
+        .profile-card {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .profile-card h3 { margin-top: 10px; font-size: 18px; }
+        .profile-card p { color: var(--text-muted); font-size: 13px; font-weight: 500; }
+
+        /* Navigation */
+        .nav-card { padding: 10px; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .nav-item i { font-size: 20px; margin-right: 12px; }
+        .nav-item:hover { background: #f5f6fa; }
+        .nav-item.active {
+            background: var(--bg-nav-active);
+            color: var(--text-nav-active);
+        }
+
+        /* Promo Card */
+        .promo-card {
+            margin-top: auto;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: white;
+            text-align: center;
+        }
+        .promo-icon { font-size: 32px; margin-bottom: 8px; }
+        .promo-card h4 { font-size: 16px; margin-bottom: 4px; }
+        .promo-card p { font-size: 12px; opacity: 0.9; margin-bottom: 12px; }
+        .btn-promo {
+            background: white;
+            color: #6c5ce7;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        /* --- CENTER FEED --- */
+        .center-column {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        /* Feed Header */
+        .feed-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .feed-header h2 { font-size: 24px; }
+        .feed-tabs { display: flex; gap: 16px; }
+        .tab {
+            font-size: 14px;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding-bottom: 4px;
+        }
+        .tab.active {
+            color: var(--primary);
+            font-weight: 700;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        /* Feed Content Area */
+        .feed-scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 8px;
+            padding-bottom: 20px;
+        }
+        .feed-scroll-area::-webkit-scrollbar { width: 6px; }
+        .feed-scroll-area::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+
+        /* Post Card Styles */
+        .post-card { position: relative; }
+        
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-name { font-weight: 700; font-size: 15px; }
+        .timestamp { font-size: 12px; color: var(--text-muted); font-weight: 400; margin-left: 6px; }
+        .menu-icon { color: var(--text-muted); cursor: pointer; }
+
+        .post-text {
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            color: #444;
+        }
+        .mention { color: #54a0ff; font-weight: 600; cursor: pointer; }
+
+        /* Media Grids */
+        .media-grid {
+            display: grid;
+            gap: 4px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .media-grid img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .media-grid img:hover { transform: scale(1.02); }
+
+        .grid-1 { grid-template-columns: 1fr; }
+        .grid-2 { grid-template-columns: 1fr 1fr; }
+        
+        /* 3-image layout: 1 big left, 2 stacked on right */
+        .grid-3 {
+            grid-template-columns: 2fr 1.4fr;
+            grid-template-rows: 1fr 1fr;
+            grid-template-areas:
+                "main side-top"
+                "main side-bottom";
+            min-height: 260px;
+        }
+        .grid-3 .media-main { grid-area: main; }
+        .grid-3 .media-side-top { grid-area: side-top; }
+        .grid-3 .media-side-bottom { grid-area: side-bottom; }
+
+        .grid-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+        .grid-5 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+
+        .more-overlay-container { position: relative; width: 100%; height: 100%; }
+        .more-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            pointer-events: none;
+        }
+
+        /* Post Footer */
+        .post-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid #eee;
+        }
+        .stats { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+        
+        .reactions-pill {
+            background: #F8F9FA;
+            border-radius: 20px;
+            padding: 4px 8px;
+            display: flex;
+            gap: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .reaction-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .reaction-btn:hover { transform: scale(1.3); }
+
+        .wow-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        /* Active reaction state */
+        .reaction-btn.active, .wow-btn.active {
+            transform: scale(1.3);
+            background: rgba(255, 107, 107, 0.12);
+            border-radius: 999px;
+        }
+        .wow-btn.active {
+            background: #ff6b6b;
+            color: #fff;
+        }
+
+        /* --- COMPOSER (Bottom) --- */
+        .composer-wrapper {
+            margin-top: 16px;
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 16px;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+        }
+        .composer-top { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+        .composer-input {
+            flex: 1;
+            background: #F0F2F5;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 24px;
+            outline: none;
+            font-size: 14px;
+        }
+        
+        /* Upload Preview */
+        .preview-container {
+            display: none;
+            margin-bottom: 12px;
+            position: relative;
+            width: fit-content;
+        }
+        .preview-grid {
+            position: relative;
+            display: inline-block;
+        }
+        .preview-image {
+            max-width: 260px;
+            max-height: 200px;
+            border-radius: 12px;
+            border: 1px solid #eee;
+            object-fit: cover;
+            display: block;
+        }
+        .preview-more {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-remove-img {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        .btn-remove-img:hover { background: rgba(0,0,0,0.8); }
+
+        /* Composer Actions */
+        .composer-actions { display: flex; justify-content: space-between; align-items: center; }
+        .action-icons { display: flex; gap: 16px; color: var(--text-muted); font-size: 20px; }
+        .action-icon { cursor: pointer; transition: 0.2s; }
+        .action-icon:hover { color: var(--primary); }
+        
+        .btn-send {
+            background: var(--bg-nav-active);
+            color: white;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-send:hover { opacity: 0.9; }
+
+        /* --- RIGHT SIDEBAR --- */
+        .right-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            height: 100%;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+        .right-sidebar::-webkit-scrollbar { display: none; }
+
+        /* Stories */
+        .stories-container {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+        .stories-container::-webkit-scrollbar { height: 4px; }
+        .stories-container::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+        
+        .story-card {
+            min-width: 80px;
+            height: 120px;
+            background: #ddd;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .story-card img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
+        .story-card:hover img { transform: scale(1.1); }
+        .story-label {
+            position: absolute;
+            bottom: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: white;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        /* Suggestions */
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .suggestion-item:last-child { margin-bottom: 0; }
+        .sugg-info { margin-left: 10px; flex: 1; }
+        .sugg-name { font-size: 13px; font-weight: 600; display: block; }
+        .sugg-role { font-size: 11px; color: var(--text-muted); }
+        .btn-follow {
+            font-size: 11px;
+            color: var(--primary);
+            background: rgba(255, 107, 107, 0.1);
+            padding: 4px 10px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-follow:hover { background: var(--primary); color: white; }
+
+        /* Recommendations */
+        .tags-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .tag-bubble {
+            background: #f1f2f6;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .tag-bubble:hover { background: #dfe4ea; transform: translateY(-2px); }
+        .tag-ui { color: #0984e3; background: rgba(9, 132, 227, 0.1); }
+        .tag-music { color: #e84393; background: rgba(232, 67, 147, 0.1); }
+        .tag-cook { color: #fdcb6e; background: rgba(253, 203, 110, 0.1); }
+        .tag-hike { color: #00b894; background: rgba(0, 184, 148, 0.1); }
+
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        
+        <aside class="left-sidebar">
+            <div class="card profile-card">
+                <div class="avatar lg">J</div>
+                <h3>Jenim</h3>
+                <p>@studentdesigner</p>
+            </div>
+
+            <div class="card nav-card">
+                <a href="#" class="nav-item active"><i class='bx bxs-news'></i> News Feed</a>
+                <a href="#" class="nav-item"><i class='bx bxs-message-rounded-dots'></i> Messages</a>
+                <a href="#" class="nav-item"><i class='bx bxs-group'></i> Forums</a>
+                <a href="#" class="nav-item"><i class='bx bxs-user-detail'></i> Friends</a>
+                <a href="#" class="nav-item"><i class='bx bxs-camera'></i> Media</a>
+                <a href="#" class="nav-item"><i class='bx bxs-cog'></i> Settings</a>
+            </div>
+
+            <div class="card promo-card">
+                <i class='bx bxs-rocket promo-icon'></i>
+                <h4>Download the App</h4>
+                <p>Get the full experience on your mobile device.</p>
+                <button class="btn-promo">Get it now</button>
+            </div>
+        </aside>
+
+        <main class="center-column">
+            <div class="feed-header">
+                <h2>Feeds</h2>
+                <div class="feed-tabs">
+                    <div class="tab" onclick="switchTab(this)">Recents</div>
+                    <div class="tab active" onclick="switchTab(this)">Friends</div>
+                    <div class="tab" onclick="switchTab(this)">Popular</div>
+                </div>
+            </div>
+
+            <div class="feed-scroll-area" id="feedContainer">
+                
+                <div class="card post-card">
+                    <div class="post-header">
+                        <div class="user-info">
+                            <div class="avatar bg-blue">A</div>
+                            <div>
+                                <span class="user-name">Atikur Rahman</span>
+                                <span class="timestamp">2 hours ago</span>
+                            </div>
+                        </div>
+                        <i class='bx bx-dots-horizontal-rounded menu-icon'></i>
+                    </div>
+                    <div class="post-text">
+                        Just finished the final project for <span class="mention">@prof_smith</span>'s UI/UX class! 🤓 It was a challenge, but super rewarding. Check out the prototypes! <span class="mention">#studentlife</span> <span class="mention">#design</span>
+                    </div>
+                    <div class="media-grid grid-4">
+                        <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=400" alt="Coding">
+                        <img src="https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&w=400" alt="Wireframing">
+                        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=400" alt="Team Study">
+                        <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=400" alt="Design Tools">
+                    </div>
+                    <div class="post-footer">
+                        <div class="stats">
+                            <i class='bx bx-show'></i> 6355 · Like · Comment
+                        </div>
+                        <div class="reactions-pill">
+                            <button class="reaction-btn">😍</button>
+                            <button class="reaction-btn">😮</button>
+                            <button class="reaction-btn">😂</button>
+                            <button class="reaction-btn">❤️</button>
+                            <button class="wow-btn">Woow!!!</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card post-card">
+                    <div class="post-header">
+                        <div class="user-info">
+                            <div class="avatar">K</div>
+                            <div>
+                                <span class="user-name">Khairul</span>
+                                <span class="timestamp">4 hours ago</span>
+                            </div>
+                        </div>
+                        <i class='bx bx-dots-horizontal-rounded menu-icon'></i>
+                    </div>
+                    <div class="post-text">
+                        Found a great spot in the central library today! 📚 Perfect for getting ready for finals with the study group.
+                    </div>
+                    <div class="media-grid grid-5">
+                        <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=400" alt="Library">
+                        <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=400" alt="Students Studying">
+                        <img src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=400" alt="Books">
+                        <div class="more-overlay-container">
+                            <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=400" alt="Graduation Cap">
+                            <div class="more-overlay">+3</div>
+                        </div>
+                    </div>
+                    <div class="post-footer">
+                        <div class="stats">
+                            <i class='bx bx-show'></i> 1.2k · Like · Comment
+                        </div>
+                        <div class="reactions-pill">
+                            <button class="reaction-btn">🔥</button>
+                            <button class="reaction-btn">👏</button>
+                            <button class="wow-btn">Woow!!!</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="composer-wrapper">
+                <div class="composer-top">
+                    <div class="avatar sm">J</div>
+                    <input type="text" class="composer-input" id="postInput" placeholder="Share something...">
+                </div>
+
+                <div class="preview-container" id="previewContainer">
+                    <div class="preview-grid">
+                        <img src="" alt="Preview" class="preview-image" id="imagePreview">
+                        <div class="preview-more" id="previewMore"></div>
+                    </div>
+                    <button class="btn-remove-img" onclick="removeImage()">×</button>
+                </div>
+
+                <div class="composer-actions">
+                    <div class="action-icons">
+                        <input type="file" id="fileInput" accept="image/*" multiple style="display: none;" onchange="handleImageSelect(event)">
+                        
+                        <i class='bx bx-file action-icon'></i>
+                        <i class='bx bx-image action-icon' onclick="document.getElementById('fileInput').click()"></i>
+                        <i class='bx bx-map action-icon'></i>
+                        <i class='bx bx-world action-icon'></i>
+                    </div>
+                    <button class="btn-send" onclick="createPost()">Send</button>
+                </div>
+            </div>
+
+        </main>
+
+        <aside class="right-sidebar">
+            <div class="card">
+                <h4 style="margin-bottom:12px">Stories</h4>
+                <div class="stories-container">
+                    <div class="story-card">
+                        <img src="https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=150" alt="Lecture Hall">
+                        <span class="story-label">Story</span>
+                    </div>
+                    <div class="story-card">
+                        <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=150" alt="Studying">
+                        <span class="story-label">Story</span>
+                    </div>
+                    <div class="story-card">
+                        <img src="https://images.unsplash.com/photo-1603354350317-6f7aaa5911c5?auto=format&fit=crop&w=150" alt="Online Learning">
+                        <span class="story-label">Story</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h4 style="margin-bottom:12px">Suggestions</h4>
+                
+                <div class="suggestion-item">
+                    <div class="avatar bg-purple sm">K</div>
+                    <div class="sugg-info">
+                        <span class="sugg-name">Kobir</span>
+                        <span class="sugg-role">Product Designer</span>
+                    </div>
+                    <button class="btn-follow">Follow</button>
+                </div>
+                
+                <div class="suggestion-item">
+                    <div class="avatar bg-teal sm">S</div>
+                    <div class="sugg-info">
+                        <span class="sugg-name">Sarah Jenkins</span>
+                        <span class="sugg-role">Computer Science</span>
+                    </div>
+                    <button class="btn-follow">Follow</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h4 style="margin-bottom:12px">Recommendations</h4>
+                <div class="tags-grid">
+                    <div class="tag-bubble tag-ui">UI/UX</div>
+                    <div class="tag-bubble tag-music">Music</div>
+                    <div class="tag-bubble tag-cook">Cooking</div>
+                    <div class="tag-bubble tag-hike">Hiking</div>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <script>
+        // Store selected image data (Base64)
+        let currentImages = [];
+
+        // 1. Tab Switching
+        function switchTab(el) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        // 2. Handle Image Selection (multiple)
+        function handleImageSelect(event) {
+            const files = Array.from(event.target.files || []);
+            const previewContainer = document.getElementById('previewContainer');
+            const previewImg = document.getElementById('imagePreview');
+            const previewMore = document.getElementById('previewMore');
+
+            currentImages = [];
+
+            if (!files.length) {
+                removeImage();
+                return;
+            }
+
+            let loadedCount = 0;
+
+            files.forEach(file => {
+                if (!file.type.startsWith('image/')) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentImages.push(e.target.result);
+                    loadedCount++;
+
+                    // Once all files are processed, show preview
+                    if (loadedCount === files.length) {
+                        if (currentImages.length) {
+                            previewImg.src = currentImages[0];
+
+                            if (currentImages.length > 1) {
+                                previewMore.textContent = `+${currentImages.length - 1}`;
+                                previewMore.style.display = 'flex';
+                            } else {
+                                previewMore.style.display = 'none';
+                            }
+
+                            previewContainer.style.display = 'block';
+                        } else {
+                            removeImage();
+                        }
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // 3. Remove Selected Image(s)
+        function removeImage() {
+            currentImages = [];
+            document.getElementById('fileInput').value = ""; // Reset input
+            document.getElementById('previewContainer').style.display = 'none';
+            const previewMore = document.getElementById('previewMore');
+            if (previewMore) previewMore.style.display = 'none';
+        }
+
+        // 4. Create Post Function
+        function createPost() {
+            const input = document.getElementById('postInput');
+            const text = input.value;
+
+            // Validation
+            if (!text.trim() && currentImages.length === 0) return;
+
+            const feed = document.getElementById('feedContainer');
+            
+            // Build image layout HTML if images exist
+            let imagesHTML = '';
+            const totalImages = currentImages.length;
+
+            if (totalImages > 0) {
+                let gridClass = 'grid-1';
+                if (totalImages === 1) gridClass = 'grid-1';
+                else if (totalImages === 2) gridClass = 'grid-2';
+                else if (totalImages === 3) gridClass = 'grid-3';
+                else if (totalImages === 4) gridClass = 'grid-4';
+                else gridClass = 'grid-5'; // 5 or more
+
+                imagesHTML += `<div class="media-grid ${gridClass}">`;
+
+                if (totalImages === 1) {
+                    imagesHTML += `<img src="${currentImages[0]}" alt="Posted Image">`;
+                } else if (totalImages === 2) {
+                    currentImages.slice(0, 2).forEach(src => {
+                        imagesHTML += `<img src="${src}" alt="Posted Image">`;
+                    });
+                } else if (totalImages === 3) {
+                    imagesHTML += `<img src="${currentImages[0]}" class="media-main" alt="Posted Image">`;
+                    imagesHTML += `<img src="${currentImages[1]}" class="media-side-top" alt="Posted Image">`;
+                    imagesHTML += `<img src="${currentImages[2]}" class="media-side-bottom" alt="Posted Image">`;
+                } else {
+                    const maxToShow = Math.min(4, totalImages);
+                    for (let i = 0; i < maxToShow; i++) {
+                        const src = currentImages[i];
+                        const isLastVisible = i === maxToShow - 1;
+                        const hasHidden = totalImages > maxToShow;
+
+                        if (isLastVisible && hasHidden) {
+                            imagesHTML += `
+                                <div class="more-overlay-container">
+                                    <img src="${src}" alt="Posted Image">
+                                    <div class="more-overlay">+${totalImages - maxToShow}</div>
+                                </div>
+                            `;
+                        } else {
+                            imagesHTML += `<img src="${src}" alt="Posted Image">`;
+                        }
+                    }
+                }
+
+                imagesHTML += `</div>`;
+            }
+
+            // Build new post
+            const newPost = document.createElement('div');
+            newPost.className = 'card post-card';
+
+            newPost.innerHTML = `
+                <div class="post-header">
+                    <div class="user-info">
+                        <div class="avatar">J</div>
+                        <div>
+                            <span class="user-name">Jenim</span>
+                            <span class="timestamp">Just now</span>
+                        </div>
+                    </div>
+                    <i class='bx bx-dots-horizontal-rounded menu-icon'></i>
+                </div>
+                <div class="post-text">${text || ''}</div>
+                ${imagesHTML}
+                <div class="post-footer">
+                    <div class="stats"><i class='bx bx-show'></i> 1 · Like · Comment</div>
+                    <div class="reactions-pill">
+                        <button class="reaction-btn">❤️</button>
+                        <button class="reaction-btn">😂</button>
+                        <button class="reaction-btn">😮</button>
+                        <button class="wow-btn">Woow!!!</button>
+                    </div>
+                </div>
+            `;
+
+            // Animation
+            newPost.style.opacity = '0';
+            newPost.style.transform = 'translateY(20px)';
+            newPost.style.transition = 'all 0.4s ease';
+
+            // Insert at top
+            feed.prepend(newPost);
+
+            // Trigger Animation
+            setTimeout(() => {
+                newPost.style.opacity = '1';
+                newPost.style.transform = 'translateY(0)';
+            }, 10);
+            
+            // Reset
+            input.value = '';
+            removeImage();
+        }
+
+        // 5. Reaction click handling (emoji reacts dynamic)
+        document.getElementById('feedContainer').addEventListener('click', function(e) {
+            const target = e.target;
+            if (target.classList.contains('reaction-btn') || target.classList.contains('wow-btn')) {
+                const pill = target.closest('.reactions-pill');
+                if (!pill) return;
+                
+                // Only one active per post
+                pill.querySelectorAll('.reaction-btn, .wow-btn').forEach(btn => btn.classList.remove('active'));
+                target.classList.add('active');
+            }
+        });
+    </script>
+</body>
+</html>
